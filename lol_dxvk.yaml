@@ -1,0 +1,114 @@
+files:
+- lol_installer: https://riotgamespatcher-a.akamaihd.net/releases/live/installer/deploy/League%20of%20Legends%20installer%20NA.exe
+- dgvoodoo: http://www.dege.freeweb.hu/temp/dgVoodooWIP58.zip
+- dgvoodoo2: https://lutris.net/files/tools/dgvoodoo_2.55.4_dx1-7.tar.xz
+- dgvoodoo3: http://www.dege.freeweb.hu/dgVoodoo2/D3DCompiler_47.zip
+game:
+  arch: win64
+  exe: drive_c/Riot Games/League of Legends/LeagueClient.exe
+  prefix: $GAMEDIR
+installer:
+- input_menu:
+    description: 'Choose the game''s language:'
+    id: LOCALE
+    options:
+    - cs_CZ: "\u010Ce\u0161tina"
+    - en_AU: English AUS
+    - en_GB: English U.K.
+    - en_US: English U.S.
+    - fr_FR: "Fran\xE7ais"
+    - de_DE: Deutsch
+    - es_ES: "Espa\xF1ol"
+    - es_MX: "Espa\xF1ol Mexicano"
+    - it_IT: Italiano
+    - ja_JP: "\u65E5\u672C\u8A9E"
+    - hu_HU: Magyar
+    - pl_PL: Polski
+    - pt_BR: "Portugu\xEAs do Brasil"
+    - ro_RO: Romanian
+    - ru_RU: "\u0440\u0443\u0441\u0441\u043A\u0438\u0439"
+    - tr_TR: "T\xFCrk\xE7e"
+    preselect: en_US
+- input_menu:
+    description: 'Choose the game''s server region:'
+    id: REGION
+    options:
+    - BR: Brazil
+    - EUNE: Europe Nordic & East
+    - EUW: Europe West
+    - LAN: Latin America North
+    - LAS: Latin America South
+    - NA: North America
+    - OCE: Oceania
+    - RU: Russia
+    - TR: Turkey
+    - JP: Japan
+    - SEA: South East Asia
+    preselect: NA
+- task:
+    arch: win64
+    description: Creating Wine prefix
+    name: create_prefix
+    prefix: $GAMEDIR
+- task:
+    app: winxp
+    description: Setting Windows version to XP
+    name: winetricks
+    prefix: $GAMEDIR
+- task:
+    args: --mode unattended
+    description: Installing League of Legends
+    executable: lol_installer
+    name: wineexec
+    prefix: $GAMEDIR
+- task:
+    arch: win64
+    key: GrabFullScreen
+    name: set_regedit
+    path: HKEY_CURRENT_USER\Software\Wine\X11 Driver
+    prefix: $GAMEDIR
+    value: Y
+- write_file:
+    content: "install:\n    globals:\n        locale: \"$INPUT_LOCALE\"\n        region:\
+      \ \"$INPUT_REGION\"\n"
+    file: $GAMEDIR/drive_c/Riot Games/League of Legends/Config/LeagueClientSettings.yaml
+- extract:
+    dst: $CACHE
+    file: dgvoodoo
+- extract:
+    dst: $CACHE
+    file: dgvoodoo2
+- extract:
+    dst: $CACHE
+    file: dgvoodoo3
+- move:
+    dst: $GAMEDIR/drive_c/Riot Games/League of Legends
+    src: $CACHE/MS/x86/D3D9.dll
+- move:
+    dst: $GAMEDIR/drive_c/Riot Games/League of Legends
+    src: $CACHE/dgVoodoo.conf
+- move:
+    dst: $GAMEDIR/drive_c/Riot Games/League of Legends
+    src: $CACHE/D3DImm.dll
+- move:
+    dst: $GAMEDIR/drive_c/Riot Games/League of Legends
+    src: $CACHE/DDraw.dll
+- move:
+    dst: $GAMEDIR/drive_c/Riot Games/League of Legends
+    src: $CACHE/d3dcompiler_47.dll
+- write_config:
+    file: $GAMEDIR/drive_c/Riot Games/League of Legends/dgVoodoo.conf
+    key: dgVoodooWatermark
+    section: DirectX
+    value: false
+wine:
+  MouseWarpOverride: enable
+  UseGLSL: disabled
+  dxvk: true
+  dxvk_version: '0.94'
+  overrides:
+    D3D9: native
+    D3DImm: native
+    DDraw: native
+    d3dcompiler_43: native
+  version: tkg-4.2-x86_64
